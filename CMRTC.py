@@ -3,7 +3,6 @@
 import streamlit as st
 from PIL import Image
 import io
-import speech_recognition as sr
 import requests
 import tempfile
 import unicodedata
@@ -546,4 +545,5 @@ else:
 
     # --- Footer ---
     st.markdown("---")
+
     st.caption(f"Rythu Mitra v2.6 | Logged in as: {st.session_state['username']} | Language: {LANG}")
