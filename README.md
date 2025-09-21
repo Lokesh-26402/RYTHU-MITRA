@@ -22,9 +22,8 @@
 ---
 
 ## 📸 Screenshots
-{
-C:\Users\LOKESH KUMAR\OneDrive\사진\Screenshots\Screenshot 2025-09-21 071800.png
-}
+<img width="1908" height="874" alt="Screenshot 2025-09-21 071800" src="https://github.com/user-attachments/assets/77f262c9-852f-48c6-b7b6-26dc6f3639e4" />
+
 Rythu Mitra Home Dashboard
 
 ---
