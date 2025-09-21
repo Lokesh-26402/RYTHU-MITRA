@@ -23,7 +23,6 @@
 
 ## 📸 Screenshots
 
-![Dashboard](C:\Users\LOKESH KUMAR\OneDrive\사진\Screenshots)
 Rythu Mitra Home Dashboard
 
 ---
