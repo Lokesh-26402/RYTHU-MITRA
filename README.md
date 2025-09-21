@@ -22,7 +22,7 @@
 ---
 
 ## 📸 Screenshots
-
+https://github.com/Lokesh-26402/RYTHU-MITRA/blob/main/Screenshot%202025-09-21%20071800.png?raw=true
 Rythu Mitra Home Dashboard
 
 ---
