@@ -22,7 +22,9 @@
 ---
 
 ## 📸 Screenshots
-https://github.com/Lokesh-26402/RYTHU-MITRA/blob/main/Screenshot%202025-09-21%20071800.png?raw=true
+{
+C:\Users\LOKESH KUMAR\OneDrive\사진\Screenshots\Screenshot 2025-09-21 071800.png
+}
 Rythu Mitra Home Dashboard
 
 ---
