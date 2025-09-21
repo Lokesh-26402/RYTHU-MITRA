@@ -1,5 +1,3 @@
-# --- RYTHU MITRA v2.6: Fully Restored and Corrected ---
-
 import streamlit as st
 from PIL import Image
 import io
@@ -50,8 +48,9 @@ except ImportError:
     GEMINI_AVAILABLE = False
 
 # --- ⚠️ IMPORTANT: REPLACE WITH YOUR OWN API KEYS ---
-GEMINI_API_KEY = "AIzaSyB9Df80jQ6IRxoG7zgET6c-lzJlqZZhGmY"
-WEATHERAPI_KEY = "2385b7a7051045f382d62111252807"
+# It's highly recommended to use Streamlit Secrets for production
+GEMINI_API_KEY = "AIzaSyB9Df80jQ6IRxoG7zgET6c-lzJlqZZhGmY"  # st.secrets["GEMINI_API_KEY"]
+WEATHERAPI_KEY = "2385b7a7051045f382d62111252807"  # st.secrets["WEATHERAPI_KEY"]
 
 # Configure Gemini AI
 if GEMINI_AVAILABLE and GEMINI_API_KEY != "YOUR_GEMINI_API_KEY_HERE":
@@ -72,19 +71,18 @@ st.set_page_config(page_title="🌾 RYTHU MITRA", layout="wide", initial_sidebar
 # --- UI Styling ---
 st.markdown("""
 <style>
+/* --- NEW: Background Image Style --- */
+/* You can change the background image URL below */
 body {
-    background: linear-gradient(-45deg, #e3f2fd, #f1f8e9, #ffe0b2, #e1bee7);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(232, 245, 233, 0.7)), url("https://images.pexels.com/photos/3601094/pexels-photo-3601094.jpeg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
     font-family: 'Segoe UI', sans-serif;
 }
-@keyframes gradientBG {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-}
 section[data-testid="stSidebar"] {
-    background-color: rgba(232, 245, 233, 0.8);
+    background-color: rgba(232, 245, 233, 0.9); /* Slightly increased opacity for better readability */
     border-right: 2px solid #81c784;
 }
 h1, h2, h3, .stTextInput label, .stRadio label {
@@ -102,6 +100,44 @@ h1, h2, h3, .stTextInput label, .stRadio label {
 .stButton>button:hover {
     background-color: #2e7d32;
 }
+
+/* --- Card Layout Styles --- */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+div[data-testid="stVerticalBlock"]>div[style*="flex-direction: column;"]>div[data-testid="stVerticalBlock"] {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.85); /* Card background with slight transparency */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+div[data-testid="stVerticalBlock"]>div[style*="flex-direction: column;"]>div[data-testid="stVerticalBlock"]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-color: #4CAF50;
+    background-color: #ffffff;
+}
+/* Style for the button inside the card */
+div[data-testid="stVerticalBlock"]>div[style*="flex-direction: column;"]>div[data-testid="stVerticalBlock"] .stButton>button {
+    background-color: transparent;
+    color: #2e7d32;
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 1rem 0.5rem;
+    border: none;
+}
+div[data-testid="stVerticalBlock"]>div[style*="flex-direction: column;"]>div[data-testid="stVerticalBlock"] .stButton>button:hover {
+    background-color: transparent;
+    color: #1b5e20;
+}
+/* --- End Card Layout Styles --- */
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -128,18 +164,23 @@ def speak(text):
 
 
 def recognize_speech(timeout=5, phrase_time_limit=10):
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎤 Listening... Please speak clearly.")
-        r.adjust_for_ambient_noise(source)
-        try:
-            audio = r.listen(source, timeout=timeout, phrase_time_limit=phrase_time_limit)
-            query = r.recognize_google(audio)
-            st.success(f"Heard: '{query}'")
-            return query
-        except Exception as e:
-            st.error(f"Voice input failed: {e}")
-            return None
+    try:
+        import speech_recognition as sr
+        r = sr.Recognizer()
+        with sr.Microphone() as source:
+            st.info("🎤 Listening... Please speak clearly.")
+            r.adjust_for_ambient_noise(source)
+            try:
+                audio = r.listen(source, timeout=timeout, phrase_time_limit=phrase_time_limit)
+                query = r.recognize_google(audio)
+                st.success(f"Heard: '{query}'")
+                return query
+            except Exception as e:
+                st.error(f"Voice input failed: {e}")
+                return None
+    except ImportError:
+        st.error("Speech recognition library not found. Please install it: pip install SpeechRecognition PyAudio")
+        return None
 
 
 def get_user_location():
@@ -173,6 +214,24 @@ def load_profile():
     return {}
 
 
+# --- Expense Tracker Data Functions ---
+def load_tracker_data(username):
+    """Loads tracker data for a specific user from a JSON file."""
+    file_path = f"tracker_data_{username}.json"
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            return json.load(f)
+    return []
+
+
+def save_tracker_data(username, data):
+    """Saves tracker data for a specific user to a JSON file."""
+    file_path = f"tracker_data_{username}.json"
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+# --- Gemini and Weather Functions ---
 def gemini_text_response(user_input, system_prompt, lang_instruction):
     if not GEMINI_AVAILABLE: return f"**[AI not available]** Your query was: '{user_input}'"
     try:
@@ -225,7 +284,7 @@ def get_weather_advisory(location, lang_instruction="Please respond in English."
 
 TOOL_OPTIONS = [
     "🌿 Crop & Disease Detection", "🤖 AI Farming Chatbot", "☔ Weather Advisory",
-    "🧪 Soil & Fertilizer Advice", "📈 Market Prices", "🗓️ Crop Calendar",
+    "🧪 Soil & Fertilizer Advice", "📈 Market Prices", "💰 Expense Tracker", "🗓️ Crop Calendar",
     "💧 Water Management", "🏫 Govt. Schemes", "👨‍🌾 Contact Agri Officer"
 ]
 
@@ -254,6 +313,7 @@ if 'authentication_status' not in st.session_state:
     st.session_state['authentication_status'] = None
     st.session_state['username'] = None
     st.session_state['name'] = None
+    st.session_state['active_tool'] = TOOL_OPTIONS[0]
 
 # --- AUTHENTICATION UI ---
 if not st.session_state["authentication_status"]:
@@ -303,6 +363,7 @@ else:
             st.session_state['authentication_status'] = None
             st.session_state['username'] = None
             st.session_state['name'] = None
+            st.session_state['active_tool'] = TOOL_OPTIONS[0]
             st.rerun()
 
         st.header("🛠️ Tools & Settings")
@@ -339,13 +400,25 @@ else:
     st.title("🌾 RYTHU MITRA – AI Assistant for Farmers")
     st.markdown(f"Empowering **{st.session_state['name']}** with AI — Weather, Crops, Diseases, Market Info & More")
 
-    try:
-        current_tool_index = TOOL_OPTIONS.index(st.session_state.get('active_tool', TOOL_OPTIONS[0]))
-    except ValueError:
-        current_tool_index = 0
-    option = st.radio("Select Service:", TOOL_OPTIONS, index=current_tool_index, horizontal=True, key="tool_selector")
+    st.subheader("Select a Service")
 
-    # --- Service Logic ---
+    # --- Card Layout for Tool Selection ---
+    cols = st.columns(5)  # Create 5 columns for the grid
+
+    # Distribute tools into columns
+    for i, tool in enumerate(TOOL_OPTIONS):
+        col = cols[i % 5]
+        with col:
+            if st.button(tool, key=f"tool_btn_{i}"):
+                st.session_state.active_tool = tool
+                st.rerun()
+
+    st.markdown("---")
+
+    # Get the currently selected tool from session state
+    option = st.session_state.get('active_tool', TOOL_OPTIONS[0])
+
+    # --- Service Logic (remains the same) ---
     if option == "🌿 Crop & Disease Detection":
         st.header("🌿 Detect Crop Issues from Image")
         source = st.radio("Image Source", ["📷 Camera", "📁 Upload"], horizontal=True, label_visibility="collapsed")
@@ -451,6 +524,79 @@ else:
                 except Exception as e:
                     st.error(f"Could not fetch data. The service may be down. Error: {e}")
 
+    elif option == "💰 Expense Tracker":
+        st.header("💰 Farm Expense & Income Tracker")
+
+        transactions = load_tracker_data(st.session_state['username'])
+        df = pd.DataFrame(transactions)
+
+        with st.form("transaction_form", clear_on_submit=True):
+            st.subheader("Add a New Transaction")
+            c1, c2 = st.columns(2)
+            with c1:
+                trans_date = st.date_input("Date", date.today())
+                trans_type = st.selectbox("Type", ["Expense", "Income"])
+                trans_amount = st.number_input("Amount (₹)", min_value=0.0, format="%.2f")
+            with c2:
+                if trans_type == "Expense":
+                    trans_category = st.selectbox("Category",
+                                                  ["Seeds", "Fertilizer", "Pesticides", "Labor", "Machinery", "Fuel",
+                                                   "Other"])
+                else:
+                    trans_category = st.selectbox("Category", ["Crop Sale", "Subsidy", "Other"])
+                trans_notes = st.text_area("Notes (Optional)")
+
+            submitted = st.form_submit_button("💾 Add Transaction")
+            if submitted:
+                if trans_amount > 0:
+                    new_transaction = {
+                        "Date": str(trans_date),
+                        "Type": trans_type,
+                        "Category": trans_category,
+                        "Amount": trans_amount,
+                        "Notes": trans_notes
+                    }
+                    transactions.append(new_transaction)
+                    save_tracker_data(st.session_state['username'], transactions)
+                    st.success("Transaction added successfully!")
+                    st.rerun()
+                else:
+                    st.warning("Please enter an amount greater than zero.")
+
+        st.markdown("---")
+
+        if not df.empty:
+            st.subheader("Financial Overview")
+
+            df['Amount'] = pd.to_numeric(df['Amount'])
+
+            total_income = df[df['Type'] == 'Income']['Amount'].sum()
+            total_expense = df[df['Type'] == 'Expense']['Amount'].sum()
+            net_profit = total_income - total_expense
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Income", f"₹ {total_income:,.2f}", delta_color="normal")
+            c2.metric("Total Expenses", f"₹ {total_expense:,.2f}", delta_color="inverse")
+            c3.metric("Net Profit / Loss", f"₹ {net_profit:,.2f}", delta=f"{net_profit:,.2f}")
+
+            st.markdown("---")
+            tab1, tab2 = st.tabs(["📊 Expense Analysis", "📜 Transaction History"])
+
+            with tab1:
+                expense_df = df[df['Type'] == 'Expense']
+                if not expense_df.empty:
+                    st.subheader("Expenses by Category")
+                    expense_by_category = expense_df.groupby('Category')['Amount'].sum()
+                    st.bar_chart(expense_by_category)
+                else:
+                    st.info("No expense data to analyze yet.")
+
+            with tab2:
+                st.subheader("Full Transaction Log")
+                st.dataframe(df, use_container_width=True)
+        else:
+            st.info("No transactions recorded yet. Use the form above to add your first entry.")
+
     elif option == "🗓️ Crop Calendar":
         st.header("🗓️ Your Personalized Crop Calendar")
         default_crop = st.session_state.get('farm_profile', {}).get('crops', '').split(',')[0].strip()
@@ -545,5 +691,4 @@ else:
 
     # --- Footer ---
     st.markdown("---")
-
-    st.caption(f"Rythu Mitra v2.6 | Logged in as: {st.session_state['username']} | Language: {LANG}")
+    st.caption(f"Rythu Mitra v2.9 | Logged in as: {st.session_state['username']} | Language: {LANG}")
